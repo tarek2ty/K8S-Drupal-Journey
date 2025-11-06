@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: mariadb
+  name: mariadb
+  namespace: drupal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: mariadb
+    spec:
+      containers:
+        - image: mariadb
+          name: mariadb
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: drupal
+            - name: MYSQL_USER
+              value: drupal
+            - name: MYSQL_PASSWORD
+              value: drupal
+            - name: MYSQL_RANDOM_ROOT_PASSWORD
+              value: 'yes'
+          volumeMounts:
+            - mountPath: /var/lib/mysql/
+              name: database
+          resources: {}
+      volumes:
+        - name: database
+          persistentVolumeClaim:
+            claimName: mariadb-pvc
+status: {}
