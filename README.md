@@ -1,11 +1,4 @@
-* Pulls the base image
-* Creates directory /app
-* Copies app and requirements
-* Installs Flask via pip
-* Exposes port 5000
-* Runs the app
-* Build and save image:
-* Kubernetes Implementation Journey
+Kubernetes Implementation Journey
 =================================
 
 This project documents my personal journey to implement a real-world application on Kubernetes.It starts from a simple Python Flask app, and grows into a full Drupal (LAMP stack) deployment with persistent storage, Helm charts, scaling, and troubleshooting.
@@ -21,7 +14,8 @@ Make sure firewall allows port 5000 and http/https:
 
 ```bash
    # firewall-cmd --add-port=5000/tcp  
-   # firewall-cmd --add-service=http   ```
+   # firewall-cmd --add-service=http   
+```
 
 After testing the app, build a container image.
 
@@ -46,41 +40,48 @@ Build and save image:
 
 ```bash
    # podman build -t flask-app:v1.0.0 .  
-   # podman save -o flask-app.tar flask-app:v1.0.0   ```
+   # podman save -o flask-app.tar flask-app:v1.0.0
+```
 
 Load into minikube:
 
 ```bash
-   # minikube image load flask-app.tar   ```
+   # minikube image load flask-app.tar
+```
 
 Create deployment:
 
 ```bash
-   # kubectl create deploy myapp --image localhost/flask-app --dry-run=client -o yaml > myapp.yaml   ```
+   # kubectl create deploy myapp --image localhost/flask-app --dry-run=client -o yaml > myapp.yaml
+```
 
 Modify YAML to expose port 5000.
 
 Expose service:
 
 ```bash
-   # kubectl expose deployment myapp --type NodePort --port 5000   ```
+   # kubectl expose deployment myapp --type NodePort --port 5000
+```
 
 Check service:
 
 ```bash
-   # kubectl get svc  # curl :/Hello   ```
+   # kubectl get svc  # curl :/Hello
+```
 
 Observe requests routing:
 
 ```bash
-   # kubectl logs -f -l app=myapp --prefix=true   ```
+   # kubectl logs -f -l app=myapp --prefix=true
+```
 
 ### Updating and Rollback
 
 ```bash
    # kubectl set image deploy myapp flask-app=localhost/flask-app:v1.0.1  
    # kubectl rollout history deploy myapp  
-   # kubectl rollout undo deploy myapp   ```
+   # kubectl rollout undo deploy myapp
+```
 
 Deploying a Real Application – Drupal
 -------------------------------------
@@ -111,7 +112,8 @@ Helm is the package manager for Kubernetes.
 
 ```bash
    # helm repo add bitnami https://charts.bitnami.com/bitnami  
-   # helm install mysite bitnami/drupal   ```
+   # helm install mysite bitnami/drupal
+```
 
 This automatically deploys:
 
@@ -126,12 +128,14 @@ To access the site:
 
 ```bash
    # kubectl get svc  
-   # minikube tunnel   ```
+   # minikube tunnel
+```
 
 Check secrets for database:
 
 ```bash
-   # kubectl get secrets mysite-mariadb   ```
+   # kubectl get secrets mysite-mariadb
+```
 
 Helm charts use template YAML files under the hood that deploy all of this into a namespace (drupal).
 
@@ -152,7 +156,8 @@ Custom Deployment Details
 Scaling up replicas:
 
 ```bash
-   # kubectl edit deployment -n drupal drupal  replicas: 3   ```
+   # kubectl edit deployment -n drupal drupal  replicas: 3
+```
 
 At this point, the new pods failed due to multi-attach error on the PVC, which can only be mounted on one node at a time (RWO).Solution: use node affinity or switch to a shared storage backend.
 
@@ -165,12 +170,14 @@ Helm chart:
 
 ```bash
    # helm repo add groundhog2k https://groundhog2k.github.io/helm-charts  
-   # helm install --set nfs.server=192.168.24.227 --set nfs.path=/home/ldap groundhog2k/nfs-client-provisioner --generate-name   ```
+   # helm install --set nfs.server=192.168.24.227 --set nfs.path=/home/ldap groundhog2k/nfs-client-provisioner --generate-name
+```
 
 Update PVCs:
 
 ```bash
-   accessModes:    - ReadWriteMany  storageClassName: nfs-client   ```
+   accessModes:    - ReadWriteMany  storageClassName: nfs-client
+```
 
 Apply manifests again.Drupal and MariaDB both now write to NFS.
 
@@ -178,7 +185,8 @@ Access and Testing
 ------------------
 
 ```bash
-   # kubectl port-forward -n drupal svc/drupal 8080:80 --address=0.0.0.0   ```
+   # kubectl port-forward -n drupal svc/drupal 8080:80 --address=0.0.0.0
+```
 
 Access from browser: http://:8080
 
@@ -187,7 +195,8 @@ Created content and verified that uploaded files were stored on NFS server.
 Load testing:
 
 ```bash
-   # ab -n 500 -c 10 http://192.168.49.2:31267/   ```
+   # ab -n 500 -c 10 http://192.168.49.2:31267/
+```
 
 Measured around 17 requests per second.
 
@@ -199,17 +208,20 @@ Horizontal Pod Autoscaling
 Enable metrics server:
 
 ```bash
-   # minikube addons enable metrics-server  # kubectl top nodes   ```
+   # minikube addons enable metrics-server  # kubectl top nodes
+```
 
 Create autoscaler:
 
 ```bash
-   # kubectl autoscale -n drupal deploy drupal --min=1 --max=8 --cpu-percent=50   ```
+   # kubectl autoscale -n drupal deploy drupal --min=1 --max=8 --cpu-percent=50
+```
 
 Run heavy load test using cookies to simulate user sessions:
 
 ```bash
-   # ab -n 1000 -c 3 -C "SESSION=..." http://192.168.24.226:8080/admin/modules   ```
+   # ab -n 1000 -c 3 -C "SESSION=..." http://192.168.24.226:8080/admin/modules
+```
 
 Observed CPU reaching 600m, triggering scale-up.Pods scaled automatically from 1 to 8 and back down after load decreased.
 
@@ -253,7 +265,8 @@ Repository Structure
 		pvc.yaml          
 		configmap.yaml  
 		/notes/      
-		implementation-steps.md   ```
+		implementation-steps.md
+```
 
 Credits
 -------
