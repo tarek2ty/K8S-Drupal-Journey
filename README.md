@@ -34,7 +34,9 @@ Dockerfile:
 *   Exposes port 5000
     
 *   Runs the app
-    
+
+<img width="656" height="418" alt="image" src="https://github.com/user-attachments/assets/8bac7522-1da4-4fa7-8b6f-9ae998cc3dc2" />
+
 
 Build and save image:
 
@@ -50,6 +52,8 @@ Load into minikube:
 ```
 
 Create deployment:
+
+<img width="564" height="692" alt="image" src="https://github.com/user-attachments/assets/d820aaa8-7eb8-4dc6-8dac-8b7ee6814951" />
 
 ```bash
    # kubectl create deploy myapp --image localhost/flask-app --dry-run=client -o yaml > myapp.yaml
@@ -241,8 +245,6 @@ Lessons Learned
 
 Next Steps
 ----------
-
-*   Add screenshots and YAML manifests.
     
 *   Automate NFS and Helm setup via Ansible.
     
