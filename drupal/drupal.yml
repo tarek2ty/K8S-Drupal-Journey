@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: drupal
+  name: drupal
+  namespace: drupal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drupal
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: drupal
+    spec:
+      initContainers:
+      - name: init-files
+        image: drupal:9-apache
+        imagePullPolicy: IfNotPresent
+        command: ['/bin/bash', '-c']
+        args: ['cp -r /var/www/html/sites/default/files /data; chown www-data:www-data /data/ -R']
+        volumeMounts:
+          - mountPath: /data
+            name: drupal-files
+      containers:
+      - image: drupal:9-apache
+        imagePullPolicy: IfNotPresent
+        name: drupal
+        volumeMounts:
+          - mountPath: /var/www/html/sites/default/
+            name: drupal-settings
+          - mountPath: /var/www/html/sites/default/files/
+            name: drupal-files
+        ports:
+          - containerPort: 80
+        livenessProbe:
+          tcpSocket:
+            port: 80
+          initialDelaySeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 80
+          initialDelaySeconds: 10
+        resources: {}
+      volumes:
+      - name: drupal-settings
+        configMap:
+          name: drupal-config
+      - name: drupal-files
+        persistentVolumeClaim:
+          claimName: drupal-files-pvc
+status: {}
