@@ -1,0 +1,16 @@
+FROM python:3.11-alpine
+
+# Set the working directory
+WORKDIR /app
+
+# Copy only necessary files
+COPY myapp.py requirements.txt ./
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Expose the Flask port
+EXPOSE 5000
+
+# Run the Flask app
+CMD ["python", "myapp.py"]
